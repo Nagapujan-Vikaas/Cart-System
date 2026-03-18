@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart System</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+}
+
+.open-btn{
+    padding:10px 20px;
+    background:#007bff;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+.cart-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.cart-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%;
+    max-width: 500px;
+}
+
+.close-cart {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.cart-items {
+    margin-top: 20px;
+}
+
+.empty-cart {
+    text-align: center;
+}
+
+.cart-summary {
+    margin-top: 20px;
+}
+
+.checkout-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Welcome to Our Store</h1>
+    <div>
+        <span>apple = ₹50</span>
+        <button onclick="addToCart('Apple', 50, 1)">Add to Cart</button>
+    </div>
+    <div>
+        <span>banana = ₹10</span>
+        <button onclick="addToCart('Banana', 10, 1)">Add to Cart</button>
+    </div>
+    <div>
+        <span>orange = ₹30</span>
+        <button onclick="addToCart('Orange', 30, 1)">Add to Cart</button>
+    </div>
+
+    <p>Click the button below to view your shopping cart.</p>
+
+<button class="open-btn" onclick="openCart()">Open Cart</button>
+
+<div id="cartModal" class="cart-modal">
+    <div class="cart-modal-content">
+        <span class="close-cart" onclick="closeCart()">&times;</span>
+        <h2>Shopping Cart</h2>
+
+        <div id="cartItems" class="cart-items">
+            <p class="empty-cart">Your cart is empty</p>
+        </div>
+
+        <div class="cart-summary">
+            <p>Total Items: <span id="totalItems">0</span></p>
+            <p>Total Price: ₹<span id="totalPrice">0.00</span></p>
+            <button class="checkout-btn" onclick="checkout()">Checkout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+let cart = [];
+
+function openCart(){
+    document.getElementById("cartModal").style.display="block";
+}
+
+function closeCart(){
+    document.getElementById("cartModal").style.display="none";
+}
+
+
+function addToCart(name, price, quantity){
+    const existingItemIndex=cart.findIndex(item=>item.name===name);
+
+    if(existingItemIndex!==-1){
+        cart[existingItemIndex].quantity+=quantity;
+    }else{
+        cart.push({name,price,quantity});
+    }
+
+    displayCart();
+}
+
+function removeFromCart(name){
+    cart=cart.filter(item=>item.name!==name);
+    displayCart();
+}
+function updateQuantity(name, quantity){
+    quantity=parseInt(quantity);
+    const itemIndex=cart.findIndex(item=>item.name===name);
+
+    if(itemIndex!==-1){
+        cart[itemIndex].quantity=quantity;
+
+        if(cart[itemIndex].quantity<=0){
+            removeFromCart(name);
+        }else{
+            displayCart();
+        }
+    }
+}
+
+function clearCart(){
+    cart=[];
+    displayCart();
+}
+function displayCart(){
+    const cartItemsContainer=document.getElementById("cartItems");
+    const totalItems=document.getElementById("totalItems");
+    const totalPrice=document.getElementById("totalPrice");
+
+    cartItemsContainer.innerHTML="";
+
+    if(cart.length===0){
+        cartItemsContainer.innerHTML='<p class="empty-cart">Your cart is empty</p>';
+        totalItems.textContent=0;
+        totalPrice.textContent=0.00;
+        return;
+    }
+
+    let totalItemCount=0;
+    let totalCost=0;
+
+    cart.forEach(item=>{
+        const itemTotal=item.price*item.quantity;
+        totalItemCount+=item.quantity;
+        totalCost+=itemTotal;
+
+        const itemElement=document.createElement("div");
+        itemElement.innerHTML=`
+            <span>${item.name} - ₹${item.price} x ${item.quantity} = ₹${itemTotal.toFixed(2)}</span>
+            <button onclick="removeFromCart('${item.name}')">Remove</button>
+            <input type="number" value="${item.quantity}" min="1" onchange="updateQuantity('${item.name}', this.value)">
+        `;
+        cartItemsContainer.appendChild(itemElement);
+    });
+
+    totalItems.textContent=totalItemCount;
+    totalPrice.textContent=totalCost.toFixed(2);
+}
+function checkout(){
+
+    if(cart.length===0){
+        alert("Cart is empty!");
+        return;
+    }
+
+    alert("Order placed successfully!");
+
+    cart=[];
+    displayCart();
+}
+
+displayCart();
+
+</script>
+
+</body>
+</html>
